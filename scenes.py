@@ -13,13 +13,18 @@ SCENES = {
                 "next": "test_01",
             },
             {
+                "id": "load_game",
+                "label": "Load game",
+                "next": "LOAD",
+            },
+            {
                 "id": "menu_quit",
                 "label": "Quit Game",
-                "next": "QUIT"
+                "next": "QUIT",
             }
         ],
     },
-    
+
     "test_01": {
         "title": "Test Scene One",
         "text_blocks": [

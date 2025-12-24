@@ -1,4 +1,6 @@
 from scenes import SCENES
+from tkinter import messagebox
+from save_system import *
 
 class GameController:
     def __init__(self):
@@ -26,6 +28,10 @@ class GameController:
             self.start_new_game()
             return
         
+        if choice_id == "load_game":
+            self.load_game()
+            return
+        
         if choice_id == "menu_quit":
             self.ui.quit_game()
         
@@ -37,18 +43,28 @@ class GameController:
                 break
         # apply effects // apply_choice_effects(choice_id, self.state)
         # update pulse if needed // advance_pulse(self.state)
-        # next scene // self.state["meta"]["current_scene_id"]v=vroute_next_scene(self.state)
-        # autosave // self.save_game("autosave")
+        # next scene // self.state["meta"]["current_scene_id"] = route_next_scene(self.state)
+        # autosave // self.save_game(self.state)
         self.render_current_scene()
     
     def save_game(self):
-        # serialize self.state to json file
-        pass 
+        try:
+            save_state(self.state)
+            messagebox.showinfo("Saved", "Game saved.")
+        except Exception as e:
+            messagebox.showerror("Save Failed", str(e))
 
     def load_game(self):
-        #self.state = load state from json
-        # self.render_current_scene()
-        pass 
+        if not save_exists():
+            messagebox.showwarning("No Save", "No save file found.")
+            return
+        
+        try:
+            self.state = load_state()
+            self.render_current_scene()
+            messagebox.showinfo("Loaded", "Game loaded.")
+        except Exception as e:
+            messagebox.showerror("Load Failed", str(e))
 
     def go_to_main_menu(self):
         self.state["meta"]["current_scene_id"] = "menu_main"
@@ -56,9 +72,17 @@ class GameController:
     
     def create_initial_state(self):
         return {
-            "meta": {"current_scene_id": "menu_main"},
+            "meta": {
+                "current_scene_id": "menu_main",
+                "version": 1
+            },
             "pulse_stage": 0,
-            "flags": {},
-            "counters": {},
-            "stances": {},
+            "flags": {}, # booleans i.e. "talked_to_worker": True
+            "counters": {}, # ints i.e. "checked_logs": 3
+            "quests": {
+                "active": [],
+                "completed": [],
+                "progress": {},
+            },
+
         }
