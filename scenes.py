@@ -1,4 +1,25 @@
 SCENES = {
+    "menu_main": {
+        "title": "Clockwork Collapse (working title)",
+        "text_blocks": [
+            {
+                "text": "A text-based mystery RPG.\n\nChoose an option to begin."
+            }
+        ],
+        "choices": [
+            {
+                "id": "menu_new_game",
+                "label": "New Game",
+                "next": "test_01",
+            },
+            {
+                "id": "menu_quit",
+                "label": "Quit Game",
+                "next": "QUIT"
+            }
+        ],
+    },
+    
     "test_01": {
         "title": "Test Scene One",
         "text_blocks": [

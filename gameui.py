@@ -59,6 +59,9 @@ class GameUI:
         self._clear_choices()
         for choice in scene["choices"]:
             self._add_choice_button(choice)
+    
+    def quit_game(self):
+        self.root.quit()
 
 
     # -------- UI helper methods --------

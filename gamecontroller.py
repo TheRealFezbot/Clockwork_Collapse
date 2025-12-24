@@ -10,11 +10,11 @@ class GameController:
         self.ui = ui
 
     def start(self):
-        # add functionality for start menu
-        self.start_new_game()
+        self.create_initial_state()
+        self.render_current_scene()
 
     def start_new_game(self):
-        self.state = self.create_initial_state()
+        self.state["meta"]["current_scene_id"] = "test_01"
         self.render_current_scene()
     
     def render_current_scene(self):
@@ -22,6 +22,13 @@ class GameController:
         self.ui.render_scene(scene_id, self.state)
 
     def on_choice_selected(self, choice_id):
+        if choice_id == "menu_new_game":
+            self.start_new_game()
+            return
+        
+        if choice_id == "menu_quit":
+            self.ui.quit_game()
+        
         current_scene = SCENES[self.state["meta"]["current_scene_id"]]
         
         for choice in current_scene["choices"]:
@@ -45,7 +52,7 @@ class GameController:
 
     def create_initial_state(self):
         return {
-            "meta": {"current_scene_id": "test_01"},
+            "meta": {"current_scene_id": "menu_main"},
             "pulse_stage": 0,
             "flags": {},
             "counters": {},
