@@ -1,0 +1,7 @@
+[project]
+name = "clockwork-collapse"
+version = "0.1.0"
+description = "A text-based RPG"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
