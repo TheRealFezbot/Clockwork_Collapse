@@ -10,6 +10,49 @@ class GameUI:
         self.main_container = Frame(self.root, bg='black')
         self.content_frame = Frame(self.main_container, bg='black')
         
+        self.top_menu_frame = Frame(self.content_frame, bg="black")
+
+        self.menu_button = Button(
+            self.top_menu_frame, 
+            text="Main Menu", 
+            bg="black",
+            fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
+            command=controller.go_to_main_menu
+        )
+        self.save_button = Button(
+            self.top_menu_frame, 
+            text="Save Game", 
+            bg="black",
+            fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
+            command=controller.save_game
+        )
+        self.load_button = Button(
+            self.top_menu_frame, 
+            text="Load Game", 
+            bg="black",
+            fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
+            command=controller.load_game
+        )
+        self.quit_button = Button(
+            self.top_menu_frame, 
+            text="Quit Game", 
+            bg="black",
+            fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
+            command=self.quit_game
+        )
+
         self.title_label = Label(self.content_frame, bg='black', fg='white')
         
         self.text_frame = Frame(self.content_frame, bg='black')
@@ -39,6 +82,12 @@ class GameUI:
         self.main_container.pack(expand=True, fill=BOTH)
         self.content_frame.pack(anchor=CENTER)
         
+        self.top_menu_frame.pack(pady=8)
+        self.menu_button.pack(side=LEFT, padx=8)
+        self.save_button.pack(side=LEFT, padx=8)
+        self.load_button.pack(side=LEFT, padx=8)
+        self.quit_button.pack(side=LEFT, padx=8)
+
         self.title_label.pack(pady=10)
         
         self.text_frame.pack(pady=10)
@@ -48,6 +97,11 @@ class GameUI:
         self.choices_frame.pack(pady=15)
     
     def render_scene(self, scene_id, state):
+        if scene_id == "menu_main":
+            self.hide_top_menu()
+        else:
+            self.show_top_menu()
+        
         scene = SCENES[scene_id]
 
         self.title_label.configure(text=scene["title"])
@@ -96,3 +150,9 @@ class GameUI:
             command=lambda: self.controller.on_choice_selected(choice["id"])
         )
         btn.pack(side=LEFT, padx=8)
+    
+    def show_top_menu(self):
+        self.top_menu_frame.pack(pady=8, before=self.title_label)
+    
+    def hide_top_menu(self):
+        self.top_menu_frame.pack_forget()

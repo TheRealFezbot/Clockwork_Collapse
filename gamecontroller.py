@@ -50,6 +50,10 @@ class GameController:
         # self.render_current_scene()
         pass 
 
+    def go_to_main_menu(self):
+        self.state["meta"]["current_scene_id"] = "menu_main"
+        self.render_current_scene()
+    
     def create_initial_state(self):
         return {
             "meta": {"current_scene_id": "menu_main"},
