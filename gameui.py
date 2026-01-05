@@ -1,5 +1,6 @@
 from tkinter import *
 from scenes import SCENES
+from save_system import get_save_info, save_exists
 
 class GameUI:
     def __init__(self, root, controller):
@@ -191,3 +192,102 @@ class GameUI:
                 return block["text_if_false"]
         
         return block["text"]
+    
+    def show_save_slot_picker(self):
+        selected_slot = None
+
+        save_window = Toplevel(self.root)
+        save_window.title("Save Game")
+        save_window.geometry("600x400")
+        save_window.config(bg="black")
+
+        def on_slot_selected(slot_num):
+            nonlocal selected_slot
+            selected_slot = slot_num
+            save_window.destroy()
+
+        label = Label(save_window, text="Select a save slot:", bg="black", fg="white")
+        label.pack(pady=20)
+
+        for slot_number in range(1, 4):
+            save_info = get_save_info(slot_number)
+
+            if save_info:
+                button_text = f"Slot {slot_number}: {save_info['scene_id']} ({save_info['timestamp']})"
+            else:
+                button_text = f"Slot {slot_number}: Empty"
+        
+            btn = Button(
+                save_window,
+                text=button_text,
+                bg="black",
+                fg="white",
+                command=lambda num=slot_number: on_slot_selected(num)
+            )
+            btn.pack(pady=5)
+        
+        cancel_btn = Button(
+            save_window,
+            text="Cancel",
+            bg="black",
+            fg="white",
+            command=save_window.destroy
+        )
+        cancel_btn.pack(pady=10)
+
+        save_window.wait_window()
+
+        return selected_slot
+    
+    def show_load_slot_picker(self, available_slots):
+        selected_slot = None
+        
+        load_window = Toplevel(self.root)
+        load_window.title("Load Game")
+        load_window.geometry("600x400")
+        load_window.config(bg="black")
+        
+        def on_slot_selected(slot_num):
+            nonlocal selected_slot
+            selected_slot = slot_num
+            load_window.destroy()
+        
+        label = Label(load_window, text="Select a save to load:", bg="black", fg="white")
+        label.pack(pady=20)
+        
+        from save_system import save_exists
+        if save_exists(is_autosave=True):
+            btn = Button(
+                load_window,
+                text="Autosave: [Latest]",
+                bg="black",
+                fg="white",
+                command=lambda: on_slot_selected("autosave")
+            )
+            btn.pack(pady=5)
+        
+        for slot_number in available_slots:
+            save_info = get_save_info(slot_number)
+            button_text = f"Slot {slot_number}: {save_info['scene_id']} ({save_info['timestamp']})"
+            
+            btn = Button(
+                load_window,
+                text=button_text,
+                bg="black",
+                fg="white",
+                command=lambda num=slot_number: on_slot_selected(num)
+            )
+            btn.pack(pady=5)
+        
+        cancel_btn = Button(
+            load_window,
+            text="Cancel",
+            bg="black",
+            fg="white",
+            command=load_window.destroy 
+        )
+        cancel_btn.pack(pady=10)
+        
+        load_window.wait_window()
+        
+        return selected_slot

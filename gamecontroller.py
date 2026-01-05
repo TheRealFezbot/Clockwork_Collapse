@@ -49,28 +49,53 @@ class GameController:
                 break
             
         # update pulse if needed // advance_pulse(self.state)
-        # next scene // self.state["meta"]["current_scene_id"] = route_next_scene(self.state)
-        # autosave // self.save_game(self.state)
+        
+        self.autosave()
         self.render_current_scene()
     
-    def save_game(self):
+    def save_game(self, slot_number=None):
+        if slot_number is None:
+            slot_number = self.ui.show_save_slot_picker()
+            if slot_number is None:
+                return
+            
         try:
-            save_state(self.state)
+            save_state(self.state, slot_number=slot_number)
+            self.state["meta"]["current_slot"] = slot_number
             messagebox.showinfo("Saved", "Game saved.")
         except Exception as e:
             messagebox.showerror("Save Failed", str(e))
 
     def load_game(self):
-        if not save_exists():
-            messagebox.showwarning("No Save", "No save file found.")
+        available_slots = list_all_saves()
+        
+        if not available_slots:
+            messagebox.showwarning("No Saves", "No save files found.")
             return
         
+        slot_number = self.ui.show_load_slot_picker(available_slots)
+        if slot_number is None:
+            return
+
+
         try:
-            self.state = load_state()
+            if slot_number == "autosave":
+                self.state = load_state(is_autosave=True)
+                self.state["meta"]["current_slot"] = slot_number
+            else:
+                self.state = load_state(slot_number=slot_number)
+                self.state["meta"]["current_slot"] = slot_number
+                
             self.render_current_scene()
-            messagebox.showinfo("Loaded", "Game loaded.")
+            messagebox.showinfo("Loaded", f"Game loaded from slot {slot_number}.")
         except Exception as e:
             messagebox.showerror("Load Failed", str(e))
+    
+    def autosave(self):
+        try:
+            save_state(self.state, is_autosave=True)
+        except Exception as e:
+            print(f"Autosaved failed: {e}")
 
     def go_to_main_menu(self):
         self.state["meta"]["current_scene_id"] = "menu_main"
@@ -80,7 +105,8 @@ class GameController:
         return {
             "meta": {
                 "current_scene_id": "menu_main",
-                "version": 1
+                "version": 1,
+                "current_slot": None,
             },
             "pulse_stage": 0,
             "flags": {}, # booleans i.e. "talked_to_worker": True
