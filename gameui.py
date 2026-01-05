@@ -108,11 +108,13 @@ class GameUI:
         
         self._set_text("")
         for block in scene["text_blocks"]:
-            self._append_text(block["text"] + "\n\n")
+            text_to_show = self.get_text_for_block(block, state)
+            self._append_text(text_to_show + "\n\n")
 
         self._clear_choices()
         for choice in scene["choices"]:
-            self._add_choice_button(choice)
+            if self.should_show_choice(choice, state):
+                self._add_choice_button(choice)
     
     def quit_game(self):
         self.root.quit()
@@ -156,3 +158,36 @@ class GameUI:
     
     def hide_top_menu(self):
         self.top_menu_frame.pack_forget()
+    
+    def should_show_choice(self, choice, state):
+        if "condition" not in choice:
+            return True
+        
+        condition = choice["condition"]
+
+        if "requires_flag" in condition:
+            flag_name = condition["requires_flag"]
+            return state["flags"].get(flag_name, False) == True
+        
+        if "requires_flag_false" in condition:
+            flag_name = condition["requires_flag_false"]
+            return state["flags"].get(flag_name, False) == False
+        
+        return True
+    
+    def get_text_for_block(self, block, state):
+        if "condition" not in block:
+            return block["text"]
+        
+        condition = block["condition"]
+
+        if "requires_flag" in condition:
+            flag_name = condition["requires_flag"]
+            has_flag = state["flags"].get(flag_name, False)
+
+            if has_flag and "text_if_true" in block:
+                return block["text_if_true"]
+            elif not has_flag and "text_if_false" in block:
+                return block["text_if_false"]
+        
+        return block["text"]

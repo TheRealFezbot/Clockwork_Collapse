@@ -34,14 +34,20 @@ class GameController:
         
         if choice_id == "menu_quit":
             self.ui.quit_game()
+            return
         
-        current_scene = SCENES[self.state["meta"]["current_scene_id"]]
+        try:
+            current_scene = SCENES[self.state["meta"]["current_scene_id"]]
+        except KeyError: 
+            messagebox.showerror("Error", f"Could not find scene: {self.state['meta']['current_scene_id']}")
+            return
         
         for choice in current_scene["choices"]:
             if choice["id"] == choice_id:
+                self.apply_choice_effects(choice, self.state)
                 self.state["meta"]["current_scene_id"] = choice["next"]
                 break
-        # apply effects // apply_choice_effects(choice_id, self.state)
+            
         # update pulse if needed // advance_pulse(self.state)
         # next scene // self.state["meta"]["current_scene_id"] = route_next_scene(self.state)
         # autosave // self.save_game(self.state)
@@ -86,3 +92,19 @@ class GameController:
             },
 
         }
+
+    def apply_choice_effects(self, choice, state):
+        if "effects" not in choice:
+            return
+        
+        effects = choice["effects"]
+
+        if "flags" in effects:
+            for flag_name, flag_value in effects["flags"].items():
+                state["flags"][flag_name] = flag_value
+        
+        if "counters" in effects:
+            for counter_name, change in effects["counters"].items():
+                if counter_name not in state["counters"]:
+                    state["counters"][counter_name] = 0
+                state["counters"][counter_name] += change
