@@ -1,5 +1,6 @@
 from tkinter import *
 from scenes import SCENES
+from quests import QUESTS
 from save_system import get_save_info, save_exists
 
 class GameUI:
@@ -22,6 +23,16 @@ class GameUI:
             activeforeground="white",
             highlightthickness=0,
             command=controller.go_to_main_menu
+        )
+        self.quest_button = Button(
+            self.top_menu_frame,
+            text="Quest Log",
+            bg="black",
+            fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
+            command=controller.show_quest_log
         )
         self.save_button = Button(
             self.top_menu_frame, 
@@ -85,6 +96,7 @@ class GameUI:
         
         self.top_menu_frame.pack(pady=8)
         self.menu_button.pack(side=LEFT, padx=8)
+        self.quest_button.pack(side=LEFT, padx=8)
         self.save_button.pack(side=LEFT, padx=8)
         self.load_button.pack(side=LEFT, padx=8)
         self.quit_button.pack(side=LEFT, padx=8)
@@ -291,3 +303,118 @@ class GameUI:
         load_window.wait_window()
         
         return selected_slot
+
+    def show_quest_log(self, state):
+        quest_window = Toplevel(self.root)
+        quest_window.title("Quest Log")
+        quest_window.geometry("600x400")
+        quest_window.config(bg="black")
+
+        main_frame = Frame(quest_window, bg="black")
+        main_frame.pack(fill=BOTH, expand=True, padx=20, pady=20)
+
+        title = Label(
+            main_frame, 
+            text="Quest Log", 
+            bg="black", 
+            fg="white", 
+            font=("Arial", 16, "bold")
+        )
+        title.pack(pady=10)
+
+        if state["quests"]["active"]:
+            active_label = Label(
+                main_frame,
+                text="Active Quests:",
+                bg="black",
+                fg="yellow",
+                font=("Arial", 12, "bold")
+            )
+            active_label.pack(anchor=W, pady=(10, 5))
+
+            for quest_id in state["quests"]["active"]:
+                quest = QUESTS[quest_id]
+
+                quest_name = Label(
+                    main_frame,
+                    text=quest["name"],
+                    bg="black",
+                    fg="white",
+                    font=("Arial", 11, "bold")
+                )
+                quest_name.pack(anchor=W, padx=10)
+
+                quest_desc = Label(
+                    main_frame,
+                    text=quest["description"],
+                    bg="black",
+                    fg="gray70",
+                    font=("Arial", 9)
+                )
+                quest_desc.pack(anchor=W, padx=20, pady=(0,5))
+
+                for obj in quest["objectives"]:
+                    if "condition" in obj:
+                        condition_met = state["flags"].get(obj["condition"], False)
+                        if not condition_met:
+                            continue
+                    
+                    is_completed = state["quests"]["progress"][quest_id][obj["id"]]
+
+                    if is_completed:
+                        obj_text = f"  ✓ {obj['description']}"
+                        obj_color = "green"
+                    else:
+                        obj_text = f"  ○ {obj['description']}"
+                        obj_color = "white"
+                    
+                    obj_label = Label(
+                        main_frame,
+                        text=obj_text,
+                        bg="black",
+                        fg=obj_color,
+                        font=("Arial", 10)
+                    )
+                    obj_label.pack(anchor=W, padx=30)
+                
+                seperator = Label(main_frame, text="", bg="black")
+                seperator.pack(pady=5)
+        else:
+            no_quests = Label(
+                main_frame, 
+                text="No active quests",
+                bg="black",
+                fg="gray",
+                font=("Arial", 10)
+            )
+            no_quests.pack(pady=10)
+        
+        if state["quests"]["completed"]:
+            completed_label = Label(
+                main_frame,
+                text="Completed Quests:",
+                bg="black",
+                fg="green",
+                font=("Arial", 12, "bold")
+            )
+            completed_label.pack(anchor=W, pady=(10, 5))
+
+            for quest_id in state["quests"]["completed"]:
+                quest = QUESTS[quest_id]
+                quest_name = Label(
+                    main_frame,
+                    text=f"✓ {quest['name']}",
+                    bg="black",
+                    fg="green",
+                    font=("Arial", 10)
+                )
+                quest_name.pack(anchor=W, padx=10)
+        
+        close_btn = Button(
+            quest_window,
+            text="Close",
+            bg="black",
+            fg="white",
+            command=quest_window.destroy
+        )
+        close_btn.pack(pady=10)

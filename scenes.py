@@ -63,6 +63,7 @@ SCENES = {
                 "id": "to_scene_03",
                 "label": "Go to Scene Three",
                 "next": "test_03",
+                "start_quest": "reach_the_end"
             },
         ],
     },
@@ -113,6 +114,7 @@ SCENES = {
                 "label": "Use the key",
                 "next": "end_of_test",
                 "condition": {"requires_flag": "has_key"},
+                "effects": {"flags": {"door_unlocked": True}}
             },
             {
                 "id": "try_force",

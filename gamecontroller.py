@@ -1,4 +1,5 @@
 from scenes import SCENES
+from quests import QUESTS
 from tkinter import messagebox
 from save_system import *
 
@@ -45,11 +46,17 @@ class GameController:
         for choice in current_scene["choices"]:
             if choice["id"] == choice_id:
                 self.apply_choice_effects(choice, self.state)
+
+                if "start_quest" in choice:
+                    self.start_quest(choice["start_quest"])
+
                 self.state["meta"]["current_scene_id"] = choice["next"]
                 break
             
         # update pulse if needed // advance_pulse(self.state)
         
+        self.update_all_quests()
+
         self.autosave()
         self.render_current_scene()
     
@@ -134,3 +141,67 @@ class GameController:
                 if counter_name not in state["counters"]:
                     state["counters"][counter_name] = 0
                 state["counters"][counter_name] += change
+
+    
+    # ----------- Quest Functions -----------
+
+    def start_quest(self, quest_id):
+        if quest_id in self.state["quests"]["active"]:
+            return
+        
+        if quest_id in self.state["quests"]["completed"]:
+            return
+        
+        self.state["quests"]["active"].append(quest_id)
+
+        quest = QUESTS[quest_id]
+        self.state["quests"]["progress"][quest_id] = {}
+
+        for obj in quest["objectives"]:
+            self.state["quests"]["progress"][quest_id][obj["id"]] = False
+        
+        messagebox.showinfo("Quest Started", f"New Quest: {quest['name']}")
+    
+    def check_quest_progress(self, quest_id):
+        if quest_id not in self.state["quests"]["active"]:
+            return
+        
+        quest = QUESTS[quest_id]
+        all_completed = True
+
+        for obj in quest["objectives"]:
+            if obj["type"] == "flag":
+                flag_name = obj["requirement"]
+                if flag_name in self.state["flags"] and self.state["flags"][flag_name]:
+                    self.state["quests"]["progress"][quest_id][obj["id"]] = True
+                else:
+                    all_completed = False
+
+            elif obj["type"] == "counter":
+                counter_name = obj["requirement"]
+                target = obj["target"]
+                current = self.state["counters"].get(counter_name, 0)
+
+                if current >= target:
+                    self.state["quests"]["progress"][quest_id][obj["id"]] = True
+                else:
+                    all_completed = False
+            
+        if all_completed:
+            self.complete_quest(quest_id)
+    
+    def complete_quest(self, quest_id):
+        self.state["quests"]["active"].remove(quest_id)
+        self.state["quests"]["completed"].append(quest_id)
+
+        #self.apply_quest_rewards(quest_id) // apply quest rewards 
+
+        quest = QUESTS[quest_id]
+        messagebox.showinfo("Quest Completed", f"Quest Completed: {quest['name']}")
+    
+    def update_all_quests(self):
+        for quest_id in self.state["quests"]["active"]:
+            self.check_quest_progress(quest_id)
+    
+    def show_quest_log(self):
+        self.ui.show_quest_log(self.state)
