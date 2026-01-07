@@ -181,14 +181,20 @@ class GameUI:
         condition = choice["condition"]
 
         if "requires_flag" in condition:
-            flag_name = condition["requires_flag"]
-            if state["flags"].get(flag_name, False) != True:
-                return False
+            flags = condition["requires_flag"]
+            if isinstance(flags, str):
+                flags = [flags]
+            for flag_name in flags:
+                if state["flags"].get(flag_name, False) != True:
+                    return False
 
         if "requires_flag_false" in condition:
-            flag_name = condition["requires_flag_false"]
-            if state["flags"].get(flag_name, False) != False:
-                return False
+            flags = condition["requires_flag_false"]
+            if isinstance(flags, str):
+                flags = [flags]
+            for flag_name in flags:
+                if state["flags"].get(flag_name, False) != False:
+                    return False
 
         return True
     
@@ -199,16 +205,20 @@ class GameUI:
             condition = block["condition"]
 
             if "requires_flag" in condition:
-                flag_name = condition["requires_flag"]
-                has_flag = state["flags"].get(flag_name, False)
-                if not has_flag:
-                    return ""
+                flags = condition["requires_flag"]
+                if isinstance(flags, str):
+                    flags = [flags]
+                for flag_name in flags:
+                    if not state["flags"].get(flag_name, False):
+                        return ""
 
             if "requires_flag_false" in condition:
-                flag_name = condition["requires_flag_false"]
-                has_flag = state["flags"].get(flag_name, False)
-                if has_flag:
-                    return ""
+                flags = condition["requires_flag_false"]
+                if isinstance(flags, str):
+                    flags = [flags]
+                for flag_name in flags:
+                    if state["flags"].get(flag_name, False):
+                        return ""
 
             text = block["text"]
 
