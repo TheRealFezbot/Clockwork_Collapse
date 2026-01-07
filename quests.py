@@ -1,22 +1,50 @@
 QUESTS = {
-    "reach_the_end": {
-        "id": "reach_the_end",
-        "name": "Reach the end",
-        "description": "Reach the end of the test to complete this quest.",
+    "mq_routine_stabilization": {
+        "id": "mq_routine_stabilization",
+        "name": "Routine Stabilization Order",
+        "description": "Complete your assigned maintenance task.",
         "objectives": [
             {
-                "id": "obj_find_key",
-                "description": "Find the key",
+                "id": "mq_01_assigned",
+                "description": "Report to workstation",
                 "type": "flag",
-                "requirement": "has_key",
+                "requirement": "mq_01_assigned",
                 "completed": False
             },
             {
-                "id": "obj_use_key",
-                "description": "Unlock the door",
-                "condition": "has_key",
+                "id": "mq_02_task_performed",
+                "description": "Perform maintenance checks",
                 "type": "flag",
-                "requirement": "door_unlocked",
+                "requirement": "mq_02_task_performed",
+                "completed": False
+            },
+            {
+                "id": "mq_03_anomalies_noted",
+                "description": "Investigate anomalies",
+                "type": "flag",
+                "requirement": "mq_03_anomalies_noted",
+                "completed": False
+            }
+        ]
+    },
+
+    "opt_01_component_retrieval": {
+        "id": "opt_01_component_retrieval",
+        "name": "Component Retrieval",
+        "description": "Retrieve the chronometric calibrator from Storage Tunnel B-4.",
+        "objectives": [
+            {
+                "id": "opt_01_started",
+                "description": "Accept the work order",
+                "type": "flag",
+                "requirement": "opt_01_started",
+                "completed": False
+            },
+            {
+                "id": "opt_01_component_retrieved",
+                "description": "Retrieve the component",
+                "type": "flag",
+                "requirement": "opt_01_component_retrieved",
                 "completed": False
             }
         ]

@@ -7,7 +7,6 @@ class GameController:
     def __init__(self):
         self.state = self.create_initial_state()
         self.ui = None
-    
 
     def attach_ui(self, ui):
         self.ui = ui
@@ -17,7 +16,7 @@ class GameController:
         self.render_current_scene()
 
     def start_new_game(self):
-        self.state["meta"]["current_scene_id"] = "test_01"
+        self.state["meta"]["current_scene_id"] = "intro"
         self.render_current_scene()
     
     def render_current_scene(self):
@@ -36,6 +35,10 @@ class GameController:
         if choice_id == "menu_quit":
             self.ui.quit_game()
             return
+        
+        if choice_id == "char_continue":
+            player_name = self.ui.prompt_player_name()
+            self.state["meta"]["player_name"] = player_name
         
         try:
             current_scene = SCENES[self.state["meta"]["current_scene_id"]]

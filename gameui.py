@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import simpledialog
 from scenes import SCENES
 from quests import QUESTS
 from save_system import get_save_info, save_exists
@@ -122,7 +123,8 @@ class GameUI:
         self._set_text("")
         for block in scene["text_blocks"]:
             text_to_show = self.get_text_for_block(block, state)
-            self._append_text(text_to_show + "\n\n")
+            if text_to_show:
+                self._append_text(text_to_show + "\n\n")
 
         self._clear_choices()
         for choice in scene["choices"]:
@@ -175,35 +177,45 @@ class GameUI:
     def should_show_choice(self, choice, state):
         if "condition" not in choice:
             return True
-        
+
         condition = choice["condition"]
 
         if "requires_flag" in condition:
             flag_name = condition["requires_flag"]
-            return state["flags"].get(flag_name, False) == True
-        
+            if state["flags"].get(flag_name, False) != True:
+                return False
+
         if "requires_flag_false" in condition:
             flag_name = condition["requires_flag_false"]
-            return state["flags"].get(flag_name, False) == False
-        
+            if state["flags"].get(flag_name, False) != False:
+                return False
+
         return True
     
     def get_text_for_block(self, block, state):
         if "condition" not in block:
-            return block["text"]
-        
-        condition = block["condition"]
+            text = block["text"]
+        else:
+            condition = block["condition"]
 
-        if "requires_flag" in condition:
-            flag_name = condition["requires_flag"]
-            has_flag = state["flags"].get(flag_name, False)
+            if "requires_flag" in condition:
+                flag_name = condition["requires_flag"]
+                has_flag = state["flags"].get(flag_name, False)
+                if not has_flag:
+                    return ""
 
-            if has_flag and "text_if_true" in block:
-                return block["text_if_true"]
-            elif not has_flag and "text_if_false" in block:
-                return block["text_if_false"]
-        
-        return block["text"]
+            if "requires_flag_false" in condition:
+                flag_name = condition["requires_flag_false"]
+                has_flag = state["flags"].get(flag_name, False)
+                if has_flag:
+                    return ""
+
+            text = block["text"]
+
+        player_name = state["meta"].get("player_name", "Operator")
+        text = text.replace("{player_name}", player_name)
+
+        return text
     
     def show_save_slot_picker(self):
         selected_slot = None
@@ -415,6 +427,21 @@ class GameUI:
             text="Close",
             bg="black",
             fg="white",
+            activebackground="gray20",
+            activeforeground="white",
+            highlightthickness=0,
             command=quest_window.destroy
         )
         close_btn.pack(pady=10)
+    
+    def prompt_player_name(self):
+        name = simpledialog.askstring(
+            "Character Name",
+            "Enter your name:",
+            parent=self.root,
+        )
+
+        if name and name.strip():
+            return name.strip()
+        else:
+            return "Cogsworth"
