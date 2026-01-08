@@ -329,20 +329,37 @@ class GameUI:
     def show_quest_log(self, state):
         quest_window = Toplevel(self.root)
         quest_window.title("Quest Log")
-        quest_window.geometry("600x400")
+        quest_window.geometry("600x500")
         quest_window.config(bg="black")
 
-        main_frame = Frame(quest_window, bg="black")
-        main_frame.pack(fill=BOTH, expand=True, padx=20, pady=20)
 
         title = Label(
-            main_frame, 
-            text="Quest Log", 
-            bg="black", 
-            fg="white", 
+            quest_window,
+            text="Quest Log",
+            bg="black",
+            fg="white",
             font=("Arial", 16, "bold")
         )
         title.pack(pady=10)
+
+        canvas_frame = Frame(quest_window, bg="black")
+        canvas_frame.pack(fill=BOTH, expand=True, padx=20, pady=(0, 10))
+
+        canvas = Canvas(canvas_frame, bg="black", highlightthickness=0)
+        scrollbar = Scrollbar(canvas_frame, orient="vertical", command=canvas.yview, bg="black", troughcolor="black")
+
+        main_frame = Frame(canvas, bg="black")
+
+        main_frame.bind(
+            "<Configure>",
+            lambda _: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=main_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side=LEFT, fill=BOTH, expand=True)
+        scrollbar.pack(side=RIGHT, fill=Y)
 
         if state["quests"]["active"]:
             active_label = Label(
