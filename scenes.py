@@ -693,11 +693,6 @@ You need to figure out what's happening before it gets worse."""
     ],
     "choices": [
         {
-            "id": "after_security_to_city",
-            "label": "Head to the city edge",
-            "next": "demo_02_city_edge"
-        },
-        {
             "id": "after_security_investigate_further",
             "label": "Investigate the Engine sector directly",
             "next": "demo_03_engine_approach"
@@ -814,7 +809,8 @@ You need to decide your next move.""",
             "next": "demo_02_records_entrance",
             "effects": {
                 "flags": {"returned_from_city": True}
-            }
+            },
+            "condition": {"requires_flag_false": "met_warden_kess"}
         },
         {
             "id": "return_corridor_to_city",
@@ -822,7 +818,14 @@ You need to decide your next move.""",
             "next": "demo_02_city_edge",
             "effects": {
                 "flags": {"returned_from_city": True}
-            }
+            },
+            "condition": {"requires_flag_false": "met_warden_kess"}
+        },
+        {
+            "id": "return_corridor_to_engine",
+            "label": "Investigate the Engine sector directly",
+            "next": "demo_03_engine_approach",
+            "condition": {"requires_flag": "met_warden_kess"}
         }
     ]
 },
@@ -1697,7 +1700,7 @@ You have to choose."""
             "label": "Help with Engine stabilization efforts",
             "next": "demo_04_stabilization_route",
             "effects": {
-                "flags": {"chose_stabilization": True}
+                "flags": {"chose_stabilization": True, "witnessed_first_pulse": True}
             }
         },
         {
@@ -1705,7 +1708,7 @@ You have to choose."""
             "label": "Help with civilian evacuations",
             "next": "demo_04_evacuations_route",
             "effects": {
-                "flags": {"chose_evacuations": True}
+                "flags": {"chose_evacuations": True, "witnessed_first_pulse": True}
             }
         }
     ]
@@ -2185,7 +2188,7 @@ There's more. At the bottom of the stack."""
             "label": "Keep reading",
             "next": "demo_06_document_reveal",
             "effects": {
-                "flags": {"found_document_in_stacks": True, "mq_07_decision_point": True}
+                "flags": {"found_document_in_stacks": True, "reached_decision_point": True}
             }
         }
     ]
@@ -2228,7 +2231,7 @@ You keep reading."""
             "label": "Keep reading",
             "next": "demo_06_document_reveal",
             "effects": {
-                "flags": {"found_document_in_tray": True, "mq_07_decision_point": True}
+                "flags": {"found_document_in_tray": True, "reached_decision_point": True}
             }
         }
     ]
@@ -2267,7 +2270,7 @@ You turn the page."""
             "label": "Keep reading",
             "next": "demo_06_document_reveal",
             "effects": {
-                "flags": {"found_document_at_board": True, "mq_07_decision_point": True}
+                "flags": {"found_document_at_board": True, "reached_decision_point": True}
             }
         }
     ]
