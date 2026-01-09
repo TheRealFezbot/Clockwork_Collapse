@@ -8,6 +8,8 @@ class GameUI:
     def __init__(self, root, controller):
         self.controller = controller
         self.root = root
+        self.typewriter_job = None
+        self.is_typing = False
 
         # -------- create widgets --------
         self.main_container = Frame(self.root, bg='black')
@@ -83,6 +85,8 @@ class GameUI:
             wrap=WORD
         )
         
+        self.text_widget.bind("<Button-1>", self._skip_typewriter)
+
         self.scrollbar = Scrollbar(self.text_frame, bg='black', troughcolor='black')
         
         self.text_widget.configure(yscrollcommand=self.scrollbar.set, state=DISABLED)
@@ -120,11 +124,13 @@ class GameUI:
 
         self.title_label.configure(text=scene["title"])
         
-        self._set_text("")
+        full_text = ""
         for block in scene["text_blocks"]:
             text_to_show = self.get_text_for_block(block, state)
             if text_to_show:
-                self._append_text(text_to_show + "\n\n")
+                full_text += text_to_show + "\n\n"
+        
+        self._typewriter_text(full_text)
 
         self._clear_choices()
         for choice in scene["choices"]:
@@ -149,6 +155,37 @@ class GameUI:
         self.text_widget.insert(END, text)
         self.text_widget.configure(state=DISABLED)
         self.text_widget.see(END)
+    
+    def _typewriter_text(self, text, delay=20):
+        if self.typewriter_job:
+            self.root.after_cancel(self.typewriter_job)
+        
+        self.is_typing = True
+        self.full_text = text
+        self._set_text("")
+
+        def type_char(index):
+            if index < len(text):
+                self.text_widget.configure(state=NORMAL)
+                self.text_widget.insert(END, text[index])
+                self.text_widget.configure(state=DISABLED)
+                self.text_widget.see(END)
+
+                self.typewriter_job = self.root.after(delay, lambda: type_char(index + 1))
+            else:
+                self.is_typing = False
+                self.typewriter_job = None
+                self._enable_choice_buttons()
+            
+        type_char(0)
+    
+    def _skip_typewriter(self, event=None):
+        if self.is_typing and self.typewriter_job:
+            self.root.after_cancel(self.typewriter_job)
+            self.is_typing = False
+            self.typewriter_job = None
+            self._set_text(self.full_text)
+            self._enable_choice_buttons()
 
 
     def _clear_choices(self):
@@ -164,9 +201,14 @@ class GameUI:
             activebackground="gray20",
             activeforeground="white",
             highlightthickness=0,
-            command=lambda: self.controller.on_choice_selected(choice["id"])
+            command=lambda: self.controller.on_choice_selected(choice["id"]),
+            state=DISABLED if self.is_typing else NORMAL
         )
         btn.pack(side=LEFT, padx=8)
+    
+    def _enable_choice_buttons(self):
+        for btn in self.choices_frame.winfo_children():
+            btn.configure(state=NORMAL)
     
     def show_top_menu(self):
         self.top_menu_frame.pack(pady=8, before=self.title_label)
@@ -392,7 +434,16 @@ class GameUI:
                 )
                 quest_desc.pack(anchor=W, padx=20, pady=(0,5))
 
-                for obj in quest["objectives"]:
+                first_incomplete_idx = None
+
+                for idx, obj in enumerate(quest["objectives"]):
+                    is_completed = state["quests"]["progress"][quest_id][obj["id"]]
+                    if not is_completed:
+                        first_incomplete_idx = idx
+                        break
+
+
+                for idx, obj in enumerate(quest["objectives"]):
                     if "condition" in obj:
                         condition_met = state["flags"].get(obj["condition"], False)
                         if not condition_met:
@@ -400,21 +451,23 @@ class GameUI:
                     
                     is_completed = state["quests"]["progress"][quest_id][obj["id"]]
 
-                    if is_completed:
-                        obj_text = f"  ✓ {obj['description']}"
-                        obj_color = "green"
-                    else:
-                        obj_text = f"  ○ {obj['description']}"
-                        obj_color = "white"
                     
-                    obj_label = Label(
-                        main_frame,
-                        text=obj_text,
-                        bg="black",
-                        fg=obj_color,
-                        font=("Arial", 10)
-                    )
-                    obj_label.pack(anchor=W, padx=30)
+                    if is_completed or idx == first_incomplete_idx:
+                        if is_completed:
+                            obj_text = f"  ✓ {obj['description']}"
+                            obj_color = "green"
+                        else:
+                            obj_text = f"  ○ {obj['description']}"
+                            obj_color = "white"
+                    
+                        obj_label = Label(
+                            main_frame,
+                            text=obj_text,
+                            bg="black",
+                            fg=obj_color,
+                            font=("Arial", 10)
+                        )
+                        obj_label.pack(anchor=W, padx=30)
                 
                 seperator = Label(main_frame, text="", bg="black")
                 seperator.pack(pady=5)
